@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Family Plastic Score Tracker</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            padding: 40px;
+            margin: 0;
+            background-image: url('background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            margin: 20px;
+        }
+        
+        h1 {
+            color: #2e8b57;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .input-group h4 {
+            margin: 0 0 10px 0;
+            color: #2e8b57;
+        }
+        
+        .item-input {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        
+        .item-input label {
+            flex: 2;
+            font-weight: bold;
+        }
+        
+        .item-input input {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .item-input .points {
+            flex: 1;
+            text-align: right;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        button {
+            font-size: 16px;
+            padding: 15px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .score-display {
+            background: linear-gradient(135deg, #2e8b57, #3cb371);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 25px 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        #totalScore {
+            font-size: 3em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .score-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .message-excellent {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .message-good {
+            background: #8BC34A;
+            color: white;
+        }
+        
+        .message-average {
+            background: #FFC107;
+            color: black;
+        }
+        
+        .message-poor {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .message-bad {
+            background: #F44336;
+            color: white;
+        }
+        
+        .action-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px;
+        }
+        
+        .save-btn {
+            background: #2196F3;
+        }
+        
+        .save-btn:hover {
+            background: #1976D2;
+        }
+        
+        .predict-btn {
+            background: #ff9800;
+        }
+        
+        .predict-btn:hover {
+            background: #f57c00;
+        }
+        
+        .dataset-btn {
+            background: #9C27B0;
+        }
+        
+        .dataset-btn:hover {
+            background: #7B1FA2;
+        }
+        
+        #predictionResult {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #ff9800;
+        }
+        
+        #history {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-score {
+            float: right;
+            font-weight: bold;
+            color: #2e8b57;
+        }
+        
+        .prediction-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .error-card {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Family Plastic Score Tracker</h1>
+        <p class="subtitle">Track your family's plastic usage with quantity-based scoring</p>
+        
+        <div class="input-group">
+            <h4>Enter Today's Plastic Usage:</h4>
+            
+            <div class="item-input">
+                <label>Plastic Bottles (5 points each):</label>
+                <input type="number" id="bottles" min="0" value="0" onchange="calculateScore()">
+                <div class="points" id="bottlesPoints">0 points</div>
+            </div>
+            
+            <div class="item-input">
+                <label>Plastic Bags (3 points each):</label>
+                <input type="number" id="bags" min="0" value="0" onchange="calculateScore()">
+                <div class="points" id="bagsPoints">0 points</div>
+            </div>
+            
+            <div class="item-input">
+                <label>Plastic Straws (2 points each):</label>
+                <input type="number" id="straws" min="0" value="0" onchange="calculateScore()">
+                <div class="points" id="strawsPoints">0 points</div>
+            </div>
+            
+            <div class="item-input">
+                <label>Food Packaging (8 points each):</label>
+                <input type="number" id="packaging" min="0" value="0" onchange="calculateScore()">
+                <div class="points" id="packagingPoints">0 points</div>
+            </div>
+            
+            <div class="item-input">
+                <label>Other Plastic (10 points each):</label>
+                <input type="number" id="other" min="0" value="0" onchange="calculateScore()">
+                <div class="points" id="otherPoints">0 points</div>
+            </div>
+        </div>
+        
+        <div class="score-display">
+            <h3>Today's Plastic Score</h3>
+            <div id="totalScore">0</div>
+            <div id="scoreMessage" class="score-message">Enter quantities to calculate score</div>
+            <div id="itemSummary" style="font-size: 0.9em; margin-top: 10px;"></div>
+        </div>
+        
+        <button class="action-btn save-btn" onclick="saveDay()">Save Day & Reset</button>
+        <br>
+        <button class="action-btn predict-btn" onclick="predict()">Predict Next Month</button>
+        <button class="action-btn dataset-btn" onclick="showDatasetInfo()">Show Dataset Info</button>
+        
+        <div id="predictionResult">
+            Your prediction will appear here...
+        </div>
+        
+        <div id="history">
+            <h3>Your History</h3>
+            <div id="historyContent">No data yet. Start tracking to see your history!</div>
+        </div>
+    </div>
+
+    <script>
+        let dailyTotal = 0;
+        let todayItems = [];
+        
+        // Points per item
+        const POINTS_PER_ITEM = {
+            bottles: 5,
+            bags: 3,
+            straws: 2,
+            packaging: 8,
+            other: 10
+        };
+        
+        function calculateScore() {
+            const bottles = parseInt(document.getElementById('bottles').value) || 0;
+            const bags = parseInt(document.getElementById('bags').value) || 0;
+            const straws = parseInt(document.getElementById('straws').value) || 0;
+            const packaging = parseInt(document.getElementById('packaging').value) || 0;
+            const other = parseInt(document.getElementById('other').value) || 0;
+            
+            // Calculate points for each category
+            const bottlesPoints = bottles * POINTS_PER_ITEM.bottles;
+            const bagsPoints = bags * POINTS_PER_ITEM.bags;
+            const strawsPoints = straws * POINTS_PER_ITEM.straws;
+            const packagingPoints = packaging * POINTS_PER_ITEM.packaging;
+            const otherPoints = other * POINTS_PER_ITEM.other;
+            
+            // Update points display
+            document.getElementById('bottlesPoints').textContent = bottlesPoints + ' points';
+            document.getElementById('bagsPoints').textContent = bagsPoints + ' points';
+            document.getElementById('strawsPoints').textContent = strawsPoints + ' points';
+            document.getElementById('packagingPoints').textContent = packagingPoints + ' points';
+            document.getElementById('otherPoints').textContent = otherPoints + ' points';
+            
+            // Calculate total
+            dailyTotal = bottlesPoints + bagsPoints + strawsPoints + packagingPoints + otherPoints;
+            document.getElementById('totalScore').textContent = dailyTotal;
+            
+            // Update item summary
+            let summary = '';
+            if (bottles > 0) summary += bottles + ' bottles, ';
+            if (bags > 0) summary += bags + ' bags, ';
+            if (straws > 0) summary += straws + ' straws, ';
+            if (packaging > 0) summary += packaging + ' packages, ';
+            if (other > 0) summary += other + ' other, ';
+            
+            document.getElementById('itemSummary').textContent = summary.replace(/,\s*$/, '') || 'No items entered';
+            
+            // Store current items
+            todayItems = [];
+            if (bottles > 0) todayItems.push({ name: 'Plastic Bottles', quantity: bottles, points: bottlesPoints });
+            if (bags > 0) todayItems.push({ name: 'Plastic Bags', quantity: bags, points: bagsPoints });
+            if (straws > 0) todayItems.push({ name: 'Plastic Straws', quantity: straws, points: strawsPoints });
+            if (packaging > 0) todayItems.push({ name: 'Food Packaging', quantity: packaging, points: packagingPoints });
+            if (other > 0) todayItems.push({ name: 'Other Plastic', quantity: other, points: otherPoints });
+            
+            updateScoreMessage();
+        }
+        
+        function updateScoreMessage() {
+            const messageElement = document.getElementById('scoreMessage');
+            let message = "";
+            let messageClass = "";
+            
+            if (dailyTotal === 0) {
+                message = "Enter quantities to calculate score";
+                messageClass = "";
+            } else if (dailyTotal <= 50) {
+                message = "Excellent! Very low plastic usage";
+                messageClass = "message-excellent";
+            } else if (dailyTotal <= 100) {
+                message = "Good! Moderate plastic usage";
+                messageClass = "message-good";
+            } else if (dailyTotal <= 200) {
+                message = "Average. Consider reducing plastic usage";
+                messageClass = "message-average";
+            } else if (dailyTotal <= 300) {
+                message = "High plastic usage. Try reusable alternatives";
+                messageClass = "message-poor";
+            } else {
+                message = "Very high! Time to minimize plastic usage";
+                messageClass = "message-bad";
+            }
+            
+            messageElement.textContent = message;
+            messageElement.className = "score-message " + messageClass;
+        }
+        
+        function saveDay() {
+            if (dailyTotal === 0) {
+                alert("Please enter some plastic items before saving!");
+                return;
+            }
+            
+            const today = new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            let motivationalMessage = "";
+            if (dailyTotal === 0) {
+                motivationalMessage = "Amazing! You used no plastic today! You're a sustainability champion!";
+            } else if (dailyTotal <= 50) {
+                motivationalMessage = "Great job! Your plastic usage is very low. Keep up the eco-friendly habits!";
+            } else if (dailyTotal <= 100) {
+                motivationalMessage = "Good effort! You're being mindful of plastic use. Try to reduce a bit more tomorrow!";
+            } else if (dailyTotal <= 200) {
+                motivationalMessage = "Moderate plastic usage. Consider using reusable alternatives to reduce your footprint.";
+            } else {
+                motivationalMessage = "High plastic usage detected. Let's work on minimizing single-use plastics for a greener planet!";
+            }
+            
+            const history = JSON.parse(localStorage.getItem('plasticHistory')) || [];
+            history.push({
+                date: today,
+                score: dailyTotal,
+                items: todayItems,
+                timestamp: new Date().getTime()
+            });
+            
+            localStorage.setItem('plasticHistory', JSON.stringify(history));
+            
+            // Reset form
+            document.getElementById('bottles').value = 0;
+            document.getElementById('bags').value = 0;
+            document.getElementById('straws').value = 0;
+            document.getElementById('packaging').value = 0;
+            document.getElementById('other').value = 0;
+            
+            dailyTotal = 0;
+            todayItems = [];
+            document.getElementById('totalScore').textContent = dailyTotal;
+            document.getElementById('itemSummary').textContent = 'No items entered';
+            document.getElementById('scoreMessage').textContent = "Enter quantities to calculate score";
+            document.getElementById('scoreMessage').className = "score-message";
+            
+            // Reset points display
+            document.getElementById('bottlesPoints').textContent = '0 points';
+            document.getElementById('bagsPoints').textContent = '0 points';
+            document.getElementById('strawsPoints').textContent = '0 points';
+            document.getElementById('packagingPoints').textContent = '0 points';
+            document.getElementById('otherPoints').textContent = '0 points';
+            
+            updateHistoryLog();
+            
+            alert("Score saved for " + today + "!\n\n" + motivationalMessage);
+        }
+        
+        async function showDatasetInfo() {
+            try {
+                const response = await fetch('http://localhost:9999/dataset-info');
+                const data = await response.json();
+                alert("External Dataset Info:\n\n- Size: " + data.dataset_size + " days\n- Range: " + data.dataset_range + "\n- Average: " + data.dataset_avg + " points/day");
+            } catch (error) {
+                alert("Could not fetch dataset info. Make sure server is running.");
+            }
+        }
+        
+        async function predict() {
+            const history = JSON.parse(localStorage.getItem('plasticHistory')) || [];
+            
+            if (history.length === 0) {
+                alert("Please save at least one day of data first!");
+                return;
+            }
+            
+            const scores = history.map(day => day.score);
+            document.getElementById('predictionResult').innerHTML = "Analyzing data with regression...";
+            
+            try {
+                const response = await fetch('http://localhost:9999/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(scores)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error("Server error: " + response.status + " - " + errorText);
+                }
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                document.getElementById('predictionResult').innerHTML = `
+                    <div class="prediction-card">
+                        <h3>Advanced Prediction Results</h3>
+                        <div style="font-size: 2.5em; font-weight: bold; margin: 10px 0; color: white;">
+                            ${result.prediction || result.simple_average || 0} points
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                            <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px;">
+                                <strong>Trend:</strong><br>${result.trend || 'stable'}
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px;">
+                                <strong>Confidence:</strong><br>${((result.confidence || 0.5) * 100).toFixed(0)}%
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 10px; margin: 10px 0;">
+                            <strong>Simple Average:</strong> ${result.simple_average || result.prediction || 0} points<br>
+                            <strong>Data Points:</strong> ${result.data_points || scores.length} days analyzed<br>
+                            <small>${result.message || 'Using regression analysis'}</small>
+                        </div>
+                        
+                        <div style="margin-top: 15px; font-size: 0.9em;">
+                            Using Advanced Machine Learning Analysis
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error("Prediction error:", error);
+                document.getElementById('predictionResult').innerHTML = `
+                    <div class="error-card">
+                        <h3>Prediction Failed</h3>
+                        <div style="margin: 15px 0;">
+                            ${error.message || 'Server connection error'}
+                        </div>
+                        <small>Make sure Python server is running on port 9999</small>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateHistoryLog() {
+            const history = JSON.parse(localStorage.getItem('plasticHistory')) || [];
+            const historyContent = document.getElementById('historyContent');
+            
+            if (history.length === 0) {
+                historyContent.innerHTML = "No data yet. Start tracking to see your history!";
+                return;
+            }
+            
+            history.sort((a, b) => b.timestamp - a.timestamp);
+            
+            const historyHtml = history.map(entry => 
+                `<div class="history-item">
+                    <strong>${entry.date}:</strong> 
+                    <span class="item-score">${entry.score} points</span>
+                    <br><small>${entry.items.map(item => `${item.quantity} ${item.name}`).join(', ')}</small>
+                </div>`
+            ).join('');
+            
+            historyContent.innerHTML = historyHtml;
+        }
+        
+        // Initialize the page
+        updateHistoryLog();
+    </script>
+</body>
+</html>
