@@ -9,9 +9,6 @@
             padding: 20px;
             margin: 0;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
             min-height: 100vh;
             color: #333;
         }
@@ -22,7 +19,6 @@
             border-radius: 20px;
             display: inline-block;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
             max-width: 800px;
             margin: 20px;
         }
@@ -31,14 +27,12 @@
             color: #2e8b57;
             margin-bottom: 10px;
             font-size: 2.8em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         .subtitle {
             color: #666;
             margin-bottom: 30px;
             font-size: 1.2em;
-            font-weight: bold;
         }
         
         .input-group {
@@ -47,13 +41,11 @@
             background: #f8f9fa;
             border-radius: 15px;
             text-align: left;
-            border: 2px solid #e9ecef;
         }
         
         .input-group h4 {
             margin: 0 0 15px 0;
             color: #2e8b57;
-            font-size: 1.3em;
         }
         
         .item-input {
@@ -68,7 +60,6 @@
         .item-input label {
             flex: 2;
             font-weight: bold;
-            color: #495057;
         }
         
         .item-input input {
@@ -77,12 +68,6 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             text-align: center;
-            font-size: 16px;
-        }
-        
-        .item-input input:focus {
-            border-color: #4CAF50;
-            outline: none;
         }
         
         .item-input .points {
@@ -90,7 +75,6 @@
             text-align: right;
             color: #2e8b57;
             font-weight: bold;
-            font-size: 1em;
         }
         
         button {
@@ -101,15 +85,12 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin: 8px;
             font-weight: bold;
         }
         
         button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            background: #45a049;
         }
         
         .score-display {
@@ -118,13 +99,11 @@
             padding: 25px;
             border-radius: 15px;
             margin: 25px 0;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
         
         #totalScore {
             font-size: 4em;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             margin: 10px 0;
         }
         
@@ -133,7 +112,6 @@
             padding: 12px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1.1em;
         }
 
         .message-excellent {
@@ -164,7 +142,6 @@
         .action-btn {
             padding: 15px 30px;
             font-size: 18px;
-            font-weight: bold;
             margin: 10px;
             min-width: 200px;
         }
@@ -173,24 +150,12 @@
             background: #2196F3;
         }
         
-        .save-btn:hover {
-            background: #1976D2;
-        }
-        
         .predict-btn {
             background: #ff9800;
         }
         
-        .predict-btn:hover {
-            background: #f57c00;
-        }
-        
         .dataset-btn {
             background: #9C27B0;
-        }
-        
-        .dataset-btn:hover {
-            background: #7B1FA2;
         }
         
         #predictionResult {
@@ -199,7 +164,6 @@
             border-radius: 15px;
             margin: 20px 0;
             border-left: 5px solid #ff9800;
-            text-align: center;
         }
         
         #history {
@@ -210,7 +174,6 @@
             text-align: left;
             max-height: 300px;
             overflow-y: auto;
-            border: 2px solid #e9ecef;
         }
         
         .history-item {
@@ -221,15 +184,10 @@
             border-radius: 8px;
         }
         
-        .history-item:last-child {
-            border-bottom: none;
-        }
-        
         .item-score {
             float: right;
             font-weight: bold;
             color: #2e8b57;
-            font-size: 1.1em;
         }
         
         .prediction-card {
@@ -237,24 +195,6 @@
             color: white; 
             padding: 25px; 
             border-radius: 15px; 
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .error-card {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .loading {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
             text-align: center;
             margin: 20px 0;
         }
@@ -278,7 +218,7 @@
 <body>
     <div class="container">
         <h1>MY PLASTIC SCORE</h1>
-        <p class="subtitle">Track and Predict Your Plastic Footprint</p>
+        <p class="subtitle">Track and Predict Your Plastic Usage</p>
         
         <div class="input-group">
             <h4>Enter Today's Plastic Usage</h4>
@@ -324,14 +264,13 @@
         <div>
             <button class="action-btn save-btn" onclick="saveDay()">Save Day and Reset</button>
             <br>
-            <button class="action-btn predict-btn" onclick="predict()">Predict Next Month</button>
+            <button class="action-btn predict-btn" onclick="predict()">Predict Next 30 Days</button>
             <button class="action-btn dataset-btn" onclick="showDatasetInfo()">Dataset Info</button>
         </div>
         
         <div id="predictionResult">
             <div style="color: #666; font-style: italic;">
-                Your next month prediction will appear here...<br>
-                <small>Uses Linear Regression to project 30 days ahead</small>
+                Your 30-day prediction will appear here...
             </div>
         </div>
         
@@ -436,19 +375,6 @@
                 day: 'numeric'
             });
             
-            let motivationalMessage = "";
-            if (dailyTotal === 0) {
-                motivationalMessage = "Amazing! You used no plastic today! You're a sustainability champion!";
-            } else if (dailyTotal <= 20) {
-                motivationalMessage = "Fantastic! Your plastic usage is very low. Keep up the eco-friendly habits!";
-            } else if (dailyTotal <= 50) {
-                motivationalMessage = "Good job! You're being mindful of plastic use.";
-            } else if (dailyTotal <= 100) {
-                motivationalMessage = "Moderate plastic usage. Consider using reusable alternatives to reduce your footprint.";
-            } else {
-                motivationalMessage = "High plastic usage detected. Let's work on minimizing single-use plastics for a greener planet!";
-            }
-            
             const history = JSON.parse(localStorage.getItem('plasticHistory')) || [];
             history.push({
                 date: today,
@@ -471,17 +397,14 @@
             
             updateHistoryLog();
             
-            alert("Score saved for " + today + "!\n\n" + motivationalMessage);
+            alert("Score saved for " + today + "!");
         }
         
         async function showDatasetInfo() {
             try {
                 const response = await fetch('http://localhost:9999/dataset-info');
                 const data = await response.json();
-                alert("MY PLASTIC SCORE Dataset Info:\n\n" +
-                      "Size: " + data.dataset_size + " days\n" +
-                      "Range: " + data.dataset_range + " points\n" +
-                      "Average: " + data.dataset_avg + " points/day");
+                alert("Dataset Info:\n\nSize: " + data.dataset_size + " days\nRange: " + data.dataset_range + " points\nAverage: " + data.dataset_avg + " points/day");
             } catch (error) {
                 alert("Could not fetch dataset info. Make sure server is running on port 9999.");
             }
@@ -497,13 +420,7 @@
             
             const scores = history.map(day => day.score);
             
-            document.getElementById('predictionResult').innerHTML = `
-                <div class="loading">
-                    <h3>Next Month Prediction in Progress...</h3>
-                    <div>Analyzing ${scores.length} days of data with Linear Regression</div>
-                    <div style="margin-top: 10px;">Projecting 30 days into the future...</div>
-                </div>
-            `;
+            document.getElementById('predictionResult').innerHTML = "Calculating 30-day prediction...";
             
             try {
                 const response = await fetch('http://localhost:9999/predict', {
@@ -524,7 +441,6 @@
                     throw new Error(result.error);
                 }
                 
-                // Determine trend symbol
                 let trendSymbol = "->";
                 if (result.trend === "increasing") trendSymbol = "UP";
                 if (result.trend === "decreasing") trendSymbol = "DOWN";
@@ -532,7 +448,7 @@
                 
                 document.getElementById('predictionResult').innerHTML = `
                     <div class="prediction-card">
-                        <h3>Next Month Plastic Score Prediction</h3>
+                        <h3>30-Day Plastic Score Prediction</h3>
                         <div style="font-size: 3em; font-weight: bold; margin: 15px 0; color: white;">
                             ${result.prediction} points
                         </div>
@@ -549,28 +465,17 @@
                             </div>
                         </div>
                         
-                        <div style="background: rgba(255,255,255,0.3); padding: 15px; border-radius: 10px; margin: 15px 0;">
-                            <strong>Simple Average:</strong> ${result.simple_prediction} points<br>
-                            <small>${result.message}</small>
-                        </div>
-                        
                         <div style="margin-top: 15px; font-size: 0.9em; opacity: 0.9;">
-                            Projecting 30 days ahead using Linear Regression AI
+                            ${result.message}
                         </div>
                     </div>
                 `;
                 
             } catch (error) {
-                console.error("Prediction error:", error);
                 document.getElementById('predictionResult').innerHTML = `
-                    <div class="error-card">
+                    <div style="background: #ff6b6b; color: white; padding: 20px; border-radius: 10px;">
                         <h3>Prediction Failed</h3>
-                        <div style="margin: 15px 0;">
-                            ${error.message || 'Server connection error'}
-                        </div>
-                        <small>Make sure Python server is running: python app.py</small>
-                        <br>
-                        <small>Port: 9999 | URL: http://localhost:9999</small>
+                        <div>${error.message}</div>
                     </div>
                 `;
             }
@@ -601,22 +506,6 @@
         // Initialize the page
         calculateScore();
         updateHistoryLog();
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey || event.metaKey) {
-                switch(event.key) {
-                    case 's':
-                        event.preventDefault();
-                        saveDay();
-                        break;
-                    case 'p':
-                        event.preventDefault();
-                        predict();
-                        break;
-                }
-            }
-        });
     </script>
 </body>
 </html>

@@ -20,24 +20,22 @@ def load_external_dataset():
         print(f"Error loading external dataset: {e}")
         return [25, 18, 32, 15, 28, 12, 35, 20, 40, 22, 18, 30, 25, 15, 38, 20, 12, 35, 28, 16, 42, 24, 19, 33, 26, 14, 45, 30, 22, 40]
 
-def linear_regression_prediction(user_scores):
+def predict_plastic_score(user_scores):
     """
-    Linear regression prediction for next month plastic scores (30 days ahead)
+    Predict plastic score for next 30 days using linear regression
     """
-    print(f"User scores for linear regression: {user_scores}")
+    print(f"Predicting for scores: {user_scores}")
     
     if len(user_scores) == 0:
         return 0, "stable", 0.5
     
-    # For 1-2 data points, use simple average (not enough for regression)
+    # For small datasets, use weighted average
     if len(user_scores) <= 2:
         avg = sum(user_scores) / len(user_scores)
         prediction = avg
         return round(prediction, 2), "stable", 0.3
     
     # Prepare data for linear regression
-    # X: day numbers (1, 2, 3, ...)
-    # y: plastic scores
     X = np.array(range(1, len(user_scores) + 1)).reshape(-1, 1)
     y = np.array(user_scores)
     
@@ -45,9 +43,9 @@ def linear_regression_prediction(user_scores):
     model = LinearRegression()
     model.fit(X, y)
     
-    # Predict next month (30 days ahead)
-    next_month_day = len(user_scores) + 30
-    prediction = model.predict([[next_month_day]])[0]
+    # Predict 30 days ahead
+    next_30_days = len(user_scores) + 30
+    prediction = model.predict([[next_30_days]])[0]
     
     # Ensure prediction is not negative
     prediction = max(0, prediction)
@@ -61,88 +59,173 @@ def linear_regression_prediction(user_scores):
     else:
         trend = "stable"
     
-    # Calculate confidence based on R-squared and data points
+    # SIMPLE STABLE CONFIDENCE CALCULATION
     r_squared = model.score(X, y)
-    base_confidence = min(0.9, r_squared)
     
-    # Adjust confidence based on data points
-    if len(user_scores) >= 10:
-        confidence = base_confidence
-    elif len(user_scores) >= 5:
-        confidence = base_confidence * 0.8
+    # Calculate data consistency
+    avg_score = np.mean(y)
+    if avg_score > 0:
+        std_dev = np.std(y)
+        consistency = max(0.1, 1 - (std_dev / avg_score))
     else:
-        confidence = base_confidence * 0.6
+        consistency = 0.5
     
-    print(f"Linear regression - Slope: {slope:.2f}, R-squared: {r_squared:.2f}")
-    print(f"Prediction for next month (day {next_month_day}): {prediction:.2f}, Trend: {trend}, Confidence: {confidence:.2f}")
+    # Use the better of R-squared or consistency
+    base_confidence = max(r_squared, consistency)
     
-    return round(prediction, 2), trend, round(confidence, 2)
-
-def simple_prediction(user_scores):
-    """
-    Simple and reliable prediction using only user data
-    """
-    print(f"User scores: {user_scores}")
-    
-    if len(user_scores) == 0:
-        return 0, "stable", 0.5
-    
-    # For 1-2 data points, just use average
-    if len(user_scores) <= 2:
-        avg = sum(user_scores) / len(user_scores)
-        prediction = avg
-        return round(prediction, 2), "stable", 0.5
-    
-    # Use weighted average: recent data has more weight
-    weights = []
-    for i in range(len(user_scores)):
-        # Recent days get higher weight (linear weighting)
-        weight = (i + 1) / len(user_scores)
-        weights.append(weight)
-    
-    # Calculate weighted average
-    weighted_sum = sum(user_scores[i] * weights[i] for i in range(len(user_scores)))
-    total_weight = sum(weights)
-    weighted_avg = weighted_sum / total_weight
-    
-    # Simple trend detection
-    if len(user_scores) >= 3:
-        recent_avg = sum(user_scores[-3:]) / 3
-        older_avg = sum(user_scores[:-3]) / len(user_scores[:-3]) if len(user_scores) > 3 else user_scores[0]
-        
-        if recent_avg > older_avg * 1.1:  # 10% increase
-            trend = "increasing"
-            # Add 10% to prediction for increasing trend
-            prediction = weighted_avg * 1.1
-        elif recent_avg < older_avg * 0.9:  # 10% decrease
-            trend = "decreasing"
-            # Subtract 10% from prediction for decreasing trend
-            prediction = weighted_avg * 0.9
-        else:
-            trend = "stable"
-            prediction = weighted_avg
-    else:
-        trend = "stable"
-        prediction = weighted_avg
-    
-    # Simple confidence calculation
+    # Adjust for data quantity - SIMPLIFIED
     if len(user_scores) >= 7:
-        confidence = 0.8
-    elif len(user_scores) >= 3:
-        confidence = 0.6
+        confidence = base_confidence * 0.8
+    elif len(user_scores) >= 4:
+        confidence = base_confidence * 0.6
     else:
-        confidence = 0.4
+        confidence = base_confidence * 0.4
     
-    print(f"Weighted average: {weighted_avg:.2f}")
-    print(f"Prediction: {prediction:.2f}, Trend: {trend}, Confidence: {confidence:.2f}")
+    # Ensure reasonable range
+    confidence = min(0.95, max(0.1, confidence))
+    
+    print(f"Confidence - R²: {r_squared:.3f}, Consistency: {consistency:.3f}, Final: {confidence:.3f}")
     
     return round(prediction, 2), trend, round(confidence, 2)
-
 @app.route('/')
+
+
+
+def calculate_precision(user_scores):
+    """
+    Calculate precision by testing 1-day ahead predictions (not 30 days)
+    """
+    if len(user_scores) < 4:
+        return 0
+    
+    correct_predictions = 0
+    total_predictions = 0
+    
+    for i in range(3, len(user_scores)):
+        training_data = user_scores[:i]  # Use first i days
+        actual_score = user_scores[i]    # Actual score on day i+1
+        
+        # Prepare data for 1-day ahead prediction
+        X = np.array(range(1, len(training_data) + 1)).reshape(-1, 1)
+        y = np.array(training_data)
+        
+        # Train model
+        model = LinearRegression()
+        model.fit(X, y)
+        
+        # Predict ONLY 1 day ahead (not 30 days)
+        next_day = len(training_data) + 1
+        prediction = model.predict([[next_day]])[0]
+        prediction = max(0, prediction)  # Ensure non-negative
+        
+        # Calculate error
+        if actual_score > 0:
+            error_percentage = abs(prediction - actual_score) / actual_score
+        else:
+            error_percentage = abs(prediction - actual_score)
+        
+        # Consider correct if within 30% error
+        if error_percentage <= 0.3:
+            correct_predictions += 1
+        
+        total_predictions += 1
+        
+        print(f"Precision test: Day {next_day} - Predicted: {prediction:.1f}, Actual: {actual_score}, Error: {error_percentage:.1%}")
+    
+    precision = correct_predictions / total_predictions if total_predictions > 0 else 0
+    
+    print(f"Precision result: {correct_predictions}/{total_predictions} = {precision:.3f}")
+    
+    return precision
+def calculate_recall(user_scores):
+    """
+    Simple recall calculation using 1-day ahead predictions
+    """
+    if len(user_scores) < 4:
+        return 0
+    
+    correct_detections = 0
+    total_changes = 0
+    
+    print("=== RECALL CALCULATION START ===")
+    
+    for i in range(3, len(user_scores)):
+        training_data = user_scores[:i]
+        actual_next = user_scores[i]
+        actual_prev = user_scores[i-1]
+        
+        # SIMPLE 1-DAY PREDICTION (not 30 days!)
+        X = [[x] for x in range(1, len(training_data) + 1)]
+        y = training_data
+        
+        model = LinearRegression()
+        model.fit(X, y)
+        
+        # Predict next day (not 30 days!)
+        next_day = len(training_data) + 1
+        next_day_pred = model.predict([[next_day]])[0]
+        
+        # Get 1-day trend from slope
+        slope = model.coef_[0]
+        if slope > 0.1:  # Lower threshold for 1-day trends
+            pred_trend = "increasing"
+        elif slope < -0.1:
+            pred_trend = "decreasing"
+        else:
+            pred_trend = "stable"
+        
+        # Determine actual trend
+        abs_diff = abs(actual_next - actual_prev)
+        pct_diff = abs(actual_next - actual_prev) / actual_prev
+        
+        if abs_diff >= 2 or pct_diff >= 0.08:  # Lower thresholds
+            actual_trend = "increasing" if actual_next > actual_prev else "decreasing"
+        else:
+            actual_trend = "stable"
+        
+        # Count recall
+        if actual_trend != "stable":
+            total_changes += 1
+            if pred_trend == actual_trend:
+                correct_detections += 1
+        
+        print(f"Day {i+1}: Actual {actual_prev}→{actual_next} ({actual_trend}), Predicted: {pred_trend} (slope: {slope:.3f})")
+    
+    recall = correct_detections / total_changes if total_changes > 0 else 1.0
+    print(f"=== RECALL RESULT: {correct_detections}/{total_changes} = {recall:.3f} ===")
+    
+    return recall
+
+
+def calculate_f1_score(user_scores):
+    """
+    Calculate F1-Score - harmonic mean of precision and recall
+    """
+    if len(user_scores) < 4:
+        return 0
+    
+    # Calculate precision and recall first
+    precision = calculate_precision(user_scores)
+    recall = calculate_recall(user_scores)
+    
+    # F1-Score formula: 2 * (precision * recall) / (precision + recall)
+    if precision + recall > 0:
+        f1_score = 2 * (precision * recall) / (precision + recall)
+    else:
+        f1_score = 0
+    
+    print(f"F1-Score calculation: Precision={precision:.3f}, Recall={recall:.3f}, F1={f1_score:.3f}")
+    
+    return f1_score
 def home():
     return render_template('index.html')
 
 @app.route('/dataset-info')
+
+
+
+
+
 def dataset_info():
     try:
         external_data = load_external_dataset()
@@ -181,20 +264,15 @@ def predict():
         if len(valid_scores) == 0:
             return jsonify({'error': 'No valid scores provided'}), 400
         
-        # Get prediction using LINEAR REGRESSION (main method) for next month
-        prediction, trend, confidence = linear_regression_prediction(valid_scores)
-        
-        # Also get simple prediction for comparison
-        simple_pred, simple_trend, simple_conf = simple_prediction(valid_scores)
+        # Get prediction for next 30 days
+        prediction, trend, confidence = predict_plastic_score(valid_scores)
         
         result = {
             'prediction': prediction,
             'trend': trend,
             'confidence': confidence,
-            'simple_prediction': simple_pred,
-            'simple_trend': simple_trend,
             'data_points': len(valid_scores),
-            'message': f'Next month prediction based on {len(valid_scores)} days of data using Linear Regression'
+            'message': f'30-day prediction based on {len(valid_scores)} days of data'
         }
         
         print(f"Final result: {result}")
@@ -206,45 +284,135 @@ def predict():
         print(f"Prediction error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/predict-next-month', methods=['POST'])
-def predict_next_month():
-    """
-    Separate endpoint specifically for next month prediction
-    """
+@app.route('/debug-predict', methods=['POST'])
+def debug_predict():
     try:
         data = request.get_json()
+        user_scores = data.get('scores', [])
         
-        if not data or 'scores' not in data:
-            return jsonify({'error': 'No scores data received'}), 400
+        print(f"=== DEBUG PREDICTION ===")
+        print(f"Scores: {user_scores}")
         
-        user_scores = data['scores']
+        if len(user_scores) < 2:
+            return jsonify({'error': 'Need at least 2 scores'})
         
-        # Validate scores
-        valid_scores = []
-        for score in user_scores:
-            if isinstance(score, (int, float)) and score >= 0:
-                valid_scores.append(float(score))
+        # Prepare data
+        X = np.array(range(1, len(user_scores) + 1)).reshape(-1, 1)
+        y = np.array(user_scores)
         
-        if len(valid_scores) == 0:
-            return jsonify({'error': 'No valid scores provided'}), 400
+        print(f"X (days): {X.flatten()}")
+        print(f"y (scores): {y}")
         
-        # Get prediction using linear regression for next month
-        prediction, trend, confidence = linear_regression_prediction(valid_scores)
+        # Train model
+        model = LinearRegression()
+        model.fit(X, y)
         
-        result = {
-            'prediction': prediction,
-            'trend': trend,
-            'confidence': confidence,
-            'data_points': len(valid_scores),
-            'method': 'linear_regression',
-            'prediction_type': 'next_month',
-            'message': f'Next month prediction based on {len(valid_scores)} days of data'
-        }
+        # Get model details
+        r_squared = model.score(X, y)
+        slope = model.coef_[0]
+        intercept = model.intercept_
         
-        return jsonify(result)
+        # Predict
+        next_30_days = len(user_scores) + 30
+        prediction = model.predict([[next_30_days]])[0]
+        
+        print(f"Model: y = {intercept:.2f} + {slope:.2f} * X")
+        print(f"R-squared: {r_squared:.4f}")
+        print(f"Prediction for day {next_30_days}: {prediction:.2f}")
+        print("========================")
+        
+        return jsonify({
+            'r_squared': round(r_squared, 4),
+            'slope': round(slope, 4),
+            'intercept': round(intercept, 4),
+            'prediction': round(prediction, 2),
+            'next_day': next_30_days,
+            'equation': f"y = {intercept:.2f} + {slope:.2f} * day"
+        })
         
     except Exception as e:
-        print(f"Next month prediction error: {str(e)}")
+        return jsonify({'error': str(e)})
+
+
+
+@app.route('/precision', methods=['POST'])
+def calculate_precision_endpoint():
+    try:
+        data = request.get_json()
+        user_scores = data.get('scores', [])
+        
+        if len(user_scores) < 4:
+            return jsonify({
+                'error': 'Need at least 4 data points for precision calculation',
+                'minimum_data_points': 4,
+                'current_data_points': len(user_scores)
+            })
+        
+        precision = calculate_precision(user_scores)
+        
+        return jsonify({
+            'precision': round(precision, 3),
+            'precision_percentage': round(precision * 100, 1),
+            'data_points_used': len(user_scores),
+            'message': f'Model precision based on {len(user_scores)} days of historical data'
+        })
+        
+    except Exception as e:
+        print(f"Precision calculation error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/recall', methods=['POST'])
+def calculate_recall_endpoint():
+    try:
+        data = request.get_json()
+        user_scores = data.get('scores', [])
+        
+        if len(user_scores) < 4:
+            return jsonify({
+                'error': 'Need at least 4 data points for recall calculation',
+                'minimum_data_points': 4,
+                'current_data_points': len(user_scores)
+            })
+        
+        recall = calculate_recall(user_scores)
+        
+        return jsonify({
+            'recall': round(recall, 3),
+            'recall_percentage': round(recall * 100, 1),
+            'data_points_used': len(user_scores),
+            'message': f'Trend detection recall based on {len(user_scores)} days of data'
+        })
+        
+    except Exception as e:
+        print(f"Recall calculation error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/f1-score', methods=['POST'])
+def calculate_f1_score_endpoint():
+    try:
+        data = request.get_json()
+        user_scores = data.get('scores', [])
+        
+        if len(user_scores) < 4:
+            return jsonify({
+                'error': 'Need at least 4 data points for F1-Score calculation',
+                'minimum_data_points': 4,
+                'current_data_points': len(user_scores)
+            })
+        
+        f1_score = calculate_f1_score(user_scores)
+        
+        return jsonify({
+            'f1_score': round(f1_score, 3),
+            'f1_score_percentage': round(f1_score * 100, 1),
+            'precision': round(calculate_precision(user_scores), 3),
+            'recall': round(calculate_recall(user_scores), 3),
+            'data_points_used': len(user_scores),
+            'message': f'F1-Score based on {len(user_scores)} days of data'
+        })
+        
+    except Exception as e:
+        print(f"F1-Score calculation error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 def create_default_dataset():
@@ -293,5 +461,6 @@ def create_default_dataset():
 if __name__ == '__main__':
     create_default_dataset()
     print("Starting Flask server on http://localhost:9999")
-    print("Next month prediction enabled - projecting 30 days ahead")
+    print("30-day plastic score prediction enabled")
+    print("Debug endpoint available at /debug-predict")
     app.run(host='0.0.0.0', port=9999, debug=True)
